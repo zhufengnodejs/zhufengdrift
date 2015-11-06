@@ -83,3 +83,33 @@ $('#throwModal').on('hide.bs.modal',function(){
         });
     }
 });
+
+
+function pick(){
+    if(parseInt($('#pickTimes').text())<=0){
+        $('#msg').text('你今天捞瓶子的机会用完啦。。。。');
+        $('#msgModal').modal('show');
+    }else{
+        $.ajax({
+            url:"/bottle/pick",
+            type:"POST",
+            dataType:'json'
+        }).done(function(ret){
+            if(ret['code']==1){
+                var bottle = ret['msg'];
+                $('#pickTimes').text(parseInt($('#pickTimes').text())-1);
+                $("#owner").val(bottle.username);
+                $("#showOwner").html(bottle.username);
+                $("#bottle_content").val(bottle.content);
+                $("#showBottle_content").html(bottle.content);
+                $("#time").val(bottle.time);
+                $("#showTime").html(new Date(parseInt(bottle.time)).toLocaleString());
+                $('#pickModal').modal('show');
+            }else{
+                $('#pickTimes').text(parseInt($('#pickTimes').text())-1);
+                $('#msg').text(ret['msg']);
+                $('#msgModal').modal('show');
+            }
+        });
+    }
+}

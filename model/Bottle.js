@@ -108,3 +108,43 @@ module.exports.throw = function (bottle, callback) {
             }
         });
 }
+
+
+
+module.exports.pick = function (username, callback) {
+    pool.acquire(function (err, client) {
+        var oldBid = null;
+        client = promise.promisifyAll(client);
+        client.SELECTAsync(2).then(function(){
+            return  client.GETAsync(username);
+        }).then(function(result){
+            if (result && result >= 3) {
+                throw new Error("今天捡瓶子的机会已经用完啦");
+            } else {
+                return client.INCRAsync(username);
+            }
+        }).then(function(){
+            return client.SELECTAsync(0);
+        }).then(function(){
+            return client.RANDOMKEYAsync();
+        }).then(function(bottleId){
+            if (!bottleId) {
+                throw new Error("大海空空如也");
+            }else{
+                oldBid = bottleId;
+                return client.HGETALLAsync(bottleId);
+            }
+        }).then(function (bottle) {
+            pool.release(client);
+            callback({code: 1, msg: bottle});
+            return bottle;
+        }).then(function(bottle){
+            if(oldBid)
+                return client.DELAsync(oldBid);
+        }).catch(SyntaxError, function(e){
+            return callback({code: 0, msg: e.message});
+        }).catch(function(e){
+            return callback({code: 0, msg: e.message});
+        })
+    });
+}
