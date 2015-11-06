@@ -9,6 +9,8 @@ var MongoStore = require('connect-mongo')(session);
 var settings = require('./settings');
 var routes = require('./routes/index');
 var users = require('./routes/users');
+var bottle = require('./routes/bottle');
+var Bottle = require('./model/Bottle');
 
 var app = express();
 
@@ -36,11 +38,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(function(req,res,next){
   var newUser = req.session.user || {throwTimes: 0, pickTimes: 0};
   res.locals.user = newUser;
-  next();
+  if(req.session.user){
+    Bottle.getTimes(newUser.username,function(err,data){
+      newUser.throwTimes = data.throwTimes?data.throwTimes:0;
+      newUser.pickTimes = data.pickTimes?data.pickTimes:0;
+      next();
+    })
+  }else{
+    next();
+  }
 })
 app.use('/', routes);
 app.use('/users', users);
-
+app.use('/bottle', bottle);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

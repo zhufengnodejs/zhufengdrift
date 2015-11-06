@@ -46,3 +46,40 @@ function logout(){
         }
     });
 }
+
+
+function throwBottle(){
+    if(parseInt($('#throwTimes').text())<=0){
+        $('#msg').text('你今天扔瓶子的机会用完啦。。。');
+        $('#msgModal').modal('show');
+    }else{
+        $('#content').val('');
+        $('#throwModal').modal('show').css({
+            "margin-top": function () {
+                return 150;
+            }
+        });;
+    }
+}
+
+$('#throwModal').on('hide.bs.modal',function(){
+    var content = $('#content').val();
+    if(content){
+        $.ajax({
+            url:"/bottle/throw",
+            type:"POST",
+            data:{content:content},
+            dataType:'json'
+        }).done(function(ret){
+            if(ret['code']==1){
+                $('#throwTimes').text(parseInt($('#throwTimes').text())-1);
+                $('#msg').text(ret['msg']);
+                $('#msgModal').modal('show');
+            }else{
+                $('#throwTimes').text(parseInt($('#throwTimes').text())-1);
+                $('#msg').text(ret['msg']);
+                $('#msgModal').modal('show');
+            }
+        });
+    }
+});
