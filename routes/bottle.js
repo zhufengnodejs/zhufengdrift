@@ -84,5 +84,10 @@ router.post('/response',function(req,res,next){
 })
 
 
-
+//查看我的瓶子
+router.post('/myBottle',function(req,res){
+    MyBottle.myBottle(req.session.user.username,function(err,bottles){
+        return res.json({code:1,msg:bottles});
+    });
+});
 module.exports = router;

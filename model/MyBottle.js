@@ -18,3 +18,23 @@ module.exports.response = function(bottle,callback){
     });
 }
 
+
+
+
+module.exports.myBottle = function(owner,callback){
+    bottleModel.find({user:owner},function(err,bottles){
+        if(err)
+            callback(err);
+        else
+            callback(null,bottles);
+    });
+}
+
+module.exports.show = function(bottleId,callback){
+    bottleModel.findOne({_id:bottleId},function(err,bottle){
+        if(err)
+            callback(err);
+        else
+            callback(null,bottle);
+    });
+}
