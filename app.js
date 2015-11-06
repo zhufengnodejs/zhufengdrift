@@ -4,7 +4,9 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
+var MongoStore = require('connect-mongo')(session);
+var settings = require('./settings');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
@@ -20,8 +22,22 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session({
+  secret:'drift',
+  resave:false,
+  saveUninitialized:false,
+  store:new MongoStore({
+    db:settings.mongoConfig.db,
+    host:settings.mongoConfig.host,
+    port:settings.mongoConfig.port
+  })
+}));
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(function(req,res,next){
+  var newUser = req.session.user || {throwTimes: 0, pickTimes: 0};
+  res.locals.user = newUser;
+  next();
+})
 app.use('/', routes);
 app.use('/users', users);
 
